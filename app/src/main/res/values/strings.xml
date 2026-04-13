@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Reels Auto Advance</string>
+    <string name="accessibility_service_label">Reels Auto Advance</string>
+    <string name="accessibility_service_description">Watches Instagram Reels and automatically swipes to the next reel when the current one ends, so you never have to swipe manually.</string>
+</resources>
