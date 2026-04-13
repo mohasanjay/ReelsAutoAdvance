@@ -11,7 +11,7 @@ import android.content.SharedPreferences;
 import android.graphics.Path;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.util.Log;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
