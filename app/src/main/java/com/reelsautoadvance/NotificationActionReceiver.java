@@ -4,13 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import androidx.preference.PreferenceManager;
 
-/**
- * Receives the Enable / Disable button taps from the persistent notification.
- * Flips the "session_enabled" preference and tells the service to refresh
- * the notification to reflect the new state.
- */
 public class NotificationActionReceiver extends BroadcastReceiver {
 
     public static final String ACTION_ENABLE  = "com.reelsautoadvance.ACTION_ENABLE";
@@ -20,7 +14,9 @@ public class NotificationActionReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent == null || intent.getAction() == null) return;
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        // Use the same plain SharedPreferences file as MainActivity and the Service
+        SharedPreferences prefs = context.getApplicationContext()
+                .getSharedPreferences("reels_prefs", Context.MODE_PRIVATE);
 
         switch (intent.getAction()) {
             case ACTION_ENABLE:
@@ -31,7 +27,7 @@ public class NotificationActionReceiver extends BroadcastReceiver {
                 break;
         }
 
-        // Ask the running service to redraw the notification with the new state
+        // Tell the running service to refresh the notification
         Intent refresh = new Intent(context, ReelsAccessibilityService.class);
         refresh.setAction(ReelsAccessibilityService.ACTION_REFRESH_NOTIFICATION);
         context.startService(refresh);
