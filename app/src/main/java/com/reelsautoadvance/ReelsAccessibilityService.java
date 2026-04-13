@@ -9,9 +9,9 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Path;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.preference.PreferenceManager;
 import android.util.Log;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
@@ -85,7 +85,7 @@ public class ReelsAccessibilityService extends AccessibilityService {
     @Override
     public void onServiceConnected() {
         super.onServiceConnected();
-        prefs               = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs               = getApplicationContext().getSharedPreferences("reels_prefs", MODE_PRIVATE);
         notificationManager = NotificationManagerCompat.from(this);
         createNotificationChannel();
         Log.d(TAG, "Service connected");
@@ -563,15 +563,32 @@ public class ReelsAccessibilityService extends AccessibilityService {
     }
 
     private void performSwipeUp() {
-        WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (wm == null) return;
+        // Fix for Android 16: getDefaultDisplay() was removed.
+        // Use WindowMetrics instead, which works on Android 11+ (API 30+).
+        // Since minSdk is 26, we keep a fallback for API 26-29.
+        int screenWidth;
+        int screenHeight;
 
-        android.util.DisplayMetrics m = new android.util.DisplayMetrics();
-        wm.getDefaultDisplay().getMetrics(m);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11+ (API 30+) — use WindowMetrics
+            WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+            if (wm == null) return;
+            android.graphics.Rect bounds = wm.getCurrentWindowMetrics().getBounds();
+            screenWidth  = bounds.width();
+            screenHeight = bounds.height();
+        } else {
+            // Android 8-10 fallback
+            WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+            if (wm == null) return;
+            android.util.DisplayMetrics m = new android.util.DisplayMetrics();
+            wm.getDefaultDisplay().getMetrics(m);
+            screenWidth  = m.widthPixels;
+            screenHeight = m.heightPixels;
+        }
 
         Path path = new Path();
-        path.moveTo(m.widthPixels / 2f, m.heightPixels * 0.7f);
-        path.lineTo(m.widthPixels / 2f, m.heightPixels * 0.3f);
+        path.moveTo(screenWidth / 2f, screenHeight * 0.7f);
+        path.lineTo(screenWidth / 2f, screenHeight * 0.3f);
 
         GestureDescription.Builder gb = new GestureDescription.Builder();
         gb.addStroke(new GestureDescription.StrokeDescription(path, 0, 300));
